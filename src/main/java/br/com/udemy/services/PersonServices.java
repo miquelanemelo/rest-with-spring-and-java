@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import br.com.udemy.controllers.PersonController;
 import br.com.udemy.data.vo.v1.PersonVO;
+import br.com.udemy.exceptions.RequiredObjectIsNullException;
 import br.com.udemy.exceptions.ResourceNotFoundException;
 import br.com.udemy.mapper.DozerMapper;
 import br.com.udemy.model.Person;
@@ -33,7 +34,6 @@ public class PersonServices {
 	}
 
 	public PersonVO findById(Long id) {
-
 		logger.info("Finding one person");
 
 		var entity = repository.findById(id)
@@ -43,10 +43,12 @@ public class PersonServices {
 		vo.add(linkTo(methodOn(PersonController.class).findById(id)).withSelfRel());
 
 		return vo;
-
 	}
 
 	public PersonVO create(PersonVO person) {
+
+		if (person == null)
+			throw new RequiredObjectIsNullException();
 
 		logger.info("Creating one person");
 		var entity = DozerMapper.parseObject(person, Person.class);
@@ -56,9 +58,9 @@ public class PersonServices {
 	}
 
 	public PersonVO update(PersonVO person) {
-
 		logger.info("Updating one person");
-
+		if (person == null)
+			throw new RequiredObjectIsNullException();
 		var entity = repository.findById(person.getKey())
 				.orElseThrow(() -> new ResourceNotFoundException("No records found for this id"));
 
@@ -74,7 +76,6 @@ public class PersonServices {
 	}
 
 	public void delete(Long id) {
-
 		logger.info("Deleting one person");
 		var entity = repository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("No records found for this id"));

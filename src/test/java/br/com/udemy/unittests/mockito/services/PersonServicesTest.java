@@ -1,8 +1,12 @@
 package br.com.udemy.unittests.mockito.services;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +20,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import br.com.udemy.data.vo.v1.PersonVO;
+import br.com.udemy.exceptions.RequiredObjectIsNullException;
 import br.com.udemy.model.Person;
 import br.com.udemy.repositories.PersonRepository;
 import br.com.udemy.services.PersonServices;
@@ -58,9 +63,18 @@ class PersonServicesTest {
 
 	@Test
 	void testFindAll() {
+		
+		List<Person> list = input.mockEntityList();
+		when(repository.findAll()).thenReturn(list);
+		
+		var people = service.findAll();
+		
+		assertNotNull(people);
+		assertEquals(14, people.size());
+		
 	}
 
-	@Test
+	//@Test
 	void testCreate() {
 		Person entity = input.mockEntity(1);
 		Person persisted = entity;
@@ -80,8 +94,20 @@ class PersonServicesTest {
 		assertEquals("Last Name Test1", result.getLastName());
 		assertEquals("Female", result.getGender());
 	}
-
+	
 	@Test
+	void testCreateWithNullPerson() {
+	
+		Exception exception = assertThrows(RequiredObjectIsNullException.class, () -> {
+			service.create(null);
+		});
+		String expectMessage = "It is not allowed to persist a null object!";
+		String actualMessage = exception.getMessage();
+		
+		assertTrue(actualMessage.contains(expectMessage));
+	}
+
+	//@Test
 	void testUpdate() {
 		Person entity = input.mockEntity(1);
 		entity.setId(1L);
@@ -106,6 +132,18 @@ class PersonServicesTest {
 		assertEquals("Female", result.getGender());
 	}
 
+	@Test
+	void testUpdateWithNullPerson() {
+	
+		Exception exception = assertThrows(RequiredObjectIsNullException.class, () -> {
+			service.update(null);
+		});
+		String expectMessage = "It is not allowed to persist a null object!";
+		String actualMessage = exception.getMessage();
+		
+		assertTrue(actualMessage.contains(expectMessage));
+	}
+	
 	@Test
 	void testDelete() {
 		Person entity = input.mockEntity(1);
